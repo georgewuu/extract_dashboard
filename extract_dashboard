@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[12]:
+
+
+import requests
+from bs4 import BeautifulSoup
+import re
+import datetime
+import time
+import csv
+
+
+# In[13]:
+
+#the website to grab data from
+res = requests.get('http://192.168.0.1/')
+html = res.text
+dom = BeautifulSoup(html)
+#variable name
+variable = []
+n = 0
+for i in dom.select('span:nth-child(1).flabel'):
+    if n < 8 : 
+        variable.append(i.get_text())
+        n = n + 1
+variable
+#data
+con = []
+n = 0
+for i in dom.select('span:nth-child(2).fvalue'):
+    if n < 8 :
+        con.append(i.get_text())
+        n = n + 1
+#location value
+ls = []
+value = []
+pattern = r'[0-9a-zA-Z.]+'
+match = re.findall(pattern, con[7])
+for i in range(0,7):
+    ls.append(con[i])
+value = ls + match
+#find the date
+output = [] 
+current_date = datetime.date.today()
+formatted_date = current_date.strftime("%Y/%m/%d")
+output.append(formatted_date)
+current_time = datetime.datetime.now()
+formatted_time = current_time.strftime("%H:%M:%S")
+time_string = current_time.strftime("%Y%m%d_%H%M%S")
+output.append(formatted_time)
+filename = f"{time_string}.csv"
+output.append(value[4])
+output.append(value[5])
+output.append(value[3])
+output.append(value[7] + value[8])
+output.append(value[9] + value[10])
+vname = []
+vname.append('date')
+vname.append('time')
+vname.append(variable[4])
+vname.append(variable[5])
+vname.append(variable[3])
+vname.append(variable[7])
+vname.append(variable[7])
+output_folder = "C:\\Users\\IXIA-03\\Desktop\\sat_03\\dashboard_data\\"
+file_path = output_folder + filename
+with open(file_path, mode = 'w', newline = '') as f :
+    writer = csv.writer(f)
+    writer.writerow(vname)
+    writer.writerow(output)
+    f.close()
+
+
+# In[14]:
+
+
+start_input = input("Enter the start time (YYYY/MM/DD HH:MM:SS): ")
+start_time = datetime.datetime.strptime(start_input, "%Y/%m/%d %H:%M:%S")
+end_input = input("Enter the end time (YYYY/MM/DD HH:MM:SS): ")
+end_time = datetime.datetime.strptime(end_input, "%Y/%m/%d %H:%M:%S")
+while True:
+    current_time = datetime.datetime.now()
+    res = requests.get('http://192.168.0.1/')
+    html = res.text
+    if start_time <= current_time <= end_time:
+
+        dom = BeautifulSoup(html)
+        
+        #data
+        con = []
+        n = 0
+        for i in dom.select('span:nth-child(2).fvalue'):
+            if n < 8 :
+                con.append(i.get_text())
+                n = n + 1
+        #location value
+        ls = []
+        value = []
+        pattern = r'[0-9a-zA-Z.]+'
+        match = re.findall(pattern, con[7])
+        for i in range(0,7):
+            ls.append(con[i])
+        value = ls + match
+        #find the date
+        output = [] 
+        current_date = datetime.date.today()
+        formatted_date = current_date.strftime("%Y/%m/%d")
+        output.append(formatted_date)
+        current_time = datetime.datetime.now()
+        formatted_time = current_time.strftime("%H:%M:%S")
+        output.append(formatted_time)
+        output.append(value[4])
+        output.append(value[5])
+        output.append(value[3])
+        output.append(value[7] + value[8])
+        output.append(value[9] + value[10])
+        #append onto existing .csv file
+        path = 'C:\\Users\\IXIA-03\\Desktop\\sat_03\\dashboard_data\\'
+        
+        ac_path = path + filename
+        csv_file = open(ac_path, 'a', newline = '')
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(output)
+        csv_file.close()
+    time.sleep(1)
+
+
+# In[ ]:
+
+
+
+
